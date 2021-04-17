@@ -7,8 +7,10 @@ def batch_jacobian(vf,x,n_outputs,retain_graph=True):
     n_outputs = int(n_outputs)
     repear_arg = (n_outputs,) + (1,) * len(x.size())
     xr = x.repeat(*repear_arg)
-    xr.requires_grad_(True)
-    y = vf(xr)#.view(n_outputs, -1)
+    xr += torch.zeros_like(xr,requires_grad=True)
+    #xr.requires_grad_(True)
+    y = vf(xr.reshape(-1,*x.shape[1:]))
+    y = y.reshape(n_outputs,x.shape[0],*y.shape[1:])#.view(n_outputs, -1)
     I = torch.eye(n_outputs, device=xr.device)
     for i in range(1,len(y.shape)-1):
         I = I.unsqueeze(i)
